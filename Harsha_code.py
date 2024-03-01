@@ -1,15 +1,10 @@
+
 import streamlit as st
 import snowflake.connector
 from pandas import DataFrame
 from streamlit_option_menu import option_menu
 from streamlit_dbtree import streamlit_dbtree
 import pandas as pd
-from ydata_profiling import ProfileReport
-import ipywidgets
-from pydantic_settings import BaseSettings
-import streamlit.components.v1 as components
-from IPython.core.display import display,HTML
-#import pandas_profiling as pp
 st.set_page_config(page_title="Snowflake Database Portal", page_icon=":tada:", layout="wide")
 
 conn = st.connection("snowflake")
@@ -29,8 +24,7 @@ if selected_menu == "DBTree":
  if value is not None:
   for sel in value:
    st.write(sel.get("id") +" IS A " +sel.get("type"))
-   table_name=sel.get("id")
-   st.write(table_name) 
+   table_name=sel.get("id") 
    st.subheader('Workarea')
    # Create tabs
    tab_titles = ['Metadata', 'Data', 'Associations', 'SQLs']
@@ -39,7 +33,7 @@ if selected_menu == "DBTree":
    
    with tabs[0]:
         st.header('Metadata')
-        df = conn.query("select t1.*,t2.*exclude(COLUMN_NAME),t3.*exclude(REF_COLUMN_NAME) From " + db_name +".INFORMATION_SCHEMA.COLUMNS t1 left join (select TAG_NAME,TAG_VALUE,COLUMN_NAME from table("+db_name+".information_schema.tag_references_all_columns('"+table_name +"', 'table')))t2 on t1.Column_name = t2.Column_name left join (select POLICY_NAME,POLICY_KIND,REF_COLUMN_NAME,POLICY_STATUS from table(information_schema.policy_references(policy_name => '"+db_name+"."+schema_name+".stock_ssn_mask')))t3 On t1.Column_Name = t3.REF_COLUMN_NAME where CONCAT_WS('.',t1.TABLE_CATALOG,t1.TABLE_SCHEMA,t1.TABLE_NAME) = '"+table_name+"'")
+        df = conn.query("select t1.*,t2.*exclude(COLUMN_NAME),t3.*exclude(REF_COLUMN_NAME) From TEST_DATA.INFORMATION_SCHEMA.COLUMNS t1 left join (select TAG_NAME,TAG_VALUE,COLUMN_NAME from table(TEST_DATA.information_schema.tag_references_all_columns('TEST_DATA.TEST_SCHEMA.STOCK_TEST', 'table')))t2 on t1.Column_name = t2.Column_name left join (select POLICY_NAME,POLICY_KIND,REF_COLUMN_NAME,POLICY_STATUS from table(information_schema.policy_references(policy_name => 'stock_ssn_mask')))t3 On t1.Column_Name = t3.REF_COLUMN_NAME where CONCAT_WS('.',t1.TABLE_CATALOG,t1.TABLE_SCHEMA,t1.TABLE_NAME) = 'TEST_DATA.TEST_SCHEMA.STOCK_TEST'")
         df=pd.DataFrame(df)
         filter = st.multiselect('Data_Type_Filter',df['DATA_TYPE'].unique())
         if filter == []:
@@ -52,11 +46,7 @@ if selected_menu == "DBTree":
         st.header('Data')
         df = conn.query("select * from " + table_name)
         df.columns = df.columns.str.replace('Price', 'Price 💲')
-        profile = ProfileReport(df,title = "Trending_Stocks")
         st.write(df)
-        my_report = profile.to_file("my_report.html")
-        st.write(pd.read_html("my_report.html"))
-        
          
    with tabs[2]:
         st.header('Associations')
@@ -65,7 +55,7 @@ if selected_menu == "DBTree":
         st.header('SQLs')
         df = conn.query("select get_ddl('Table'," + "'" + table_name + "')")
         st.write(df)
-         
+        
 
  
 

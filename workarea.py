@@ -6,7 +6,6 @@ from streamlit_extras.badges import badge
 
 
 conn = st.connection("snowflake")
-cur = conn.cursor()
 table_name = "TEST_DATA.TEST_SCHEMA.STOCK_TEST" 
 st.title('Workarea')
 from streamlit_extras.badges import __icon__
