@@ -5,10 +5,22 @@ from streamlit_option_menu import option_menu
 from streamlit_dbtree import streamlit_dbtree
 import pandas as pd
 from ydata_profiling import ProfileReport
-import ipywidgets
-from pydantic_settings import BaseSettings
+#import ipywidgets
+#from pydantic_settings import BaseSettings
 import streamlit.components.v1 as components
 from IPython.core.display import display,HTML
+from bs4 import BeautifulSoup
+ 
+def read_html_with_beautiful_soup(file_path):
+    # Read HTML file
+    with open(file_path, 'r') as f:
+        # Parse HTML using BeautifulSoup
+        soup = BeautifulSoup(f, 'html.parser')
+    # Find all tables in the HTML
+    tables = soup.find_all('table')
+    # Read tables into DataFrame using read_html()
+    df = pd.read_html(str(tables))[0]
+    return df
 #import pandas_profiling as pp
 st.set_page_config(page_title="Snowflake Database Portal", page_icon=":tada:", layout="wide")
 
@@ -55,7 +67,12 @@ if selected_menu == "DBTree":
         profile = ProfileReport(df,title = "Trending_Stocks")
         st.write(df)
         my_report = profile.to_file("my_report.html")
-        st.write(pd.read_html("my_report.html"))
+        html_file_path = 'my_report.html'
+        # Read HTML file using BeautifulSoup with read_html()
+        df_profile = read_html_with_beautiful_soup(html_file_path)
+        st.subheader('Data Profile')
+        st.write(df_profile)
+        #st.write(pd.read_html("my_report.html"))
         
          
    with tabs[2]:
